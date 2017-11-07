@@ -199,25 +199,33 @@ layui.define('layer' , function(exports){
         });
         
         //提交文件
-        $.ajax({
-          url: options.url
-          ,type: options.method
-          ,data: formData
-          ,contentType: false 
-          ,processData: false
-          ,dataType: 'json'
-          ,success: function(res){
-            successful++;
-            done(index, res);
-            allDone();
-          }
-          ,error: function(){
-            aborted++;
-            that.msg('请求上传接口出现异常');
-            error(index);
-            allDone();
-          }
-        });
+          $.ajax({
+              url: options.url
+              , type: options.method
+              , data: formData
+              , contentType: false
+              , processData: false
+              , dataType: 'json'
+              , timeout: options.timeout || null
+              , success: function (res) {
+                  successful++;
+                  done(index, res);
+                  allDone();
+              }
+              , error: function () {
+                  aborted++;
+                  that.msg('请求上传接口出现异常');
+                  error(index);
+                  allDone();
+              },
+              xhr: function(){
+                  var xhr = $.ajaxSettings.xhr();
+                  if(typeof options.onprogress==='function' && xhr.upload) {
+                      xhr.upload.addEventListener("progress" , options.onprogress, false);
+                      return xhr;
+                  }
+              }
+          });
       });
     }
     
