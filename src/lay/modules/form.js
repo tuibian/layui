@@ -433,7 +433,7 @@ layui.define('layer', function(exports){
           if((isTrue && thisVer === 'required') || (isTrue && value)){
             //提示层风格
             if(verType === 'tips'){
-              layer.tips(errorText, othis, {tips: 1});
+              layer.tips(errorText, othis, {tips: [2,'#FF5722']});
             } else if(verType === 'alert') {
               layer.alert(errorText, {title: '提示', shadeClose: true});
             } else {
