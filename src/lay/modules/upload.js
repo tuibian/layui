@@ -13,6 +13,7 @@ layui.define('layer' , function(exports){
   ,layer = layui.layer
   ,hint = layui.hint()
   ,device = layui.device()
+  ,timer
 
   //外部接口
   ,upload = {
@@ -200,7 +201,7 @@ layui.define('layer' , function(exports){
         });
         
         //提交文件
-          $.ajax({
+          var ajaxParam={
               url: options.url
               , type: options.method
               , data: formData
@@ -218,15 +219,23 @@ layui.define('layer' , function(exports){
                   that.msg('请求上传接口出现异常');
                   error(index);
                   allDone();
-              },
-              xhr: function(){
-                  var xhr = $.ajaxSettings.xhr();
-                  if(typeof options.onprogress==='function' && xhr.upload) {
-                      xhr.upload.addEventListener("progress" , options.onprogress, false);
-                      return xhr;
-                  }
               }
-          });
+          };
+          if(typeof options.onprogress==='function'){
+            ajaxParam.xhr=function () {
+                var xhr = $.ajaxSettings.xhr();
+                if(xhr.upload) {
+                    xhr.upload.addEventListener("progress" , options.onprogress, false);
+                    return xhr;
+                }
+            }
+          }
+          $.ajax(ajaxParam);
+          if(options.keepAlive){
+              timer=setInterval(function () {
+                $.get(options.keepAlive);
+            },600000);
+          }
       });
     }
     
@@ -270,6 +279,9 @@ layui.define('layer' , function(exports){
       typeof options.done === 'function' && options.done(res, index || 0, function(files){
         that.upload(files);
       });
+      if(timer){
+        clearInterval(timer);
+      }
     }
     
     //统一网络异常回调
