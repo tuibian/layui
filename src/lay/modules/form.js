@@ -199,7 +199,7 @@ layui.define('layer', function(exports){
               dl.find('.'+NONE).remove();
             }
           };
-
+          
           if(isSearch){
             input.on('keyup', search).on('blur', function(e){
               thatInput = input;
@@ -409,31 +409,39 @@ layui.define('layer', function(exports){
     ,verifyElem = elem.find('*[lay-verify]') //获取需要校验的元素
     ,formElem = button.parents('form')[0] //获取当前所在的form元素，如果存在的话
     ,fieldElem = elem.find('input,select,textarea') //获取所有表单域
-    ,filter = button.attr('lay-filter'); //获取过滤器
- 
+    ,filter = button.attr('lay-filter') //获取过滤器
+    ,nameIndex = 0; //数组 name 索引
+
     //开始校验
     layui.each(verifyElem, function(_, item){
       var othis = $(this)
       ,vers = othis.attr('lay-verify').split('|')
       ,verType = othis.attr('lay-verType') //提示方式
       ,value = othis.val();
-
+      
       othis.removeClass(DANGER);
       layui.each(vers, function(_, thisVer){
         var isTrue //是否命中校验
         ,errorText = '' //错误提示文本
         ,isFn = typeof verify[thisVer] === 'function';
-
+        
         //匹配验证规则
         if(verify[thisVer]){
           var isTrue = isFn ? errorText = verify[thisVer](value, item) : !verify[thisVer][0].test(value);
           errorText = errorText || verify[thisVer][1];
-
+          
           //如果是必填项或者非空命中校验，则阻止提交，弹出提示
           if(isTrue){
             //提示层风格
             if(verType === 'tips'){
-              layer.tips(errorText, othis, {tips: [2,'#FF5722']});
+              layer.tips(errorText, function(){
+                if(typeof othis.attr('lay-ignore') !== 'string'){
+                  if(item.tagName.toLowerCase() === 'select' || /^checkbox|radio$/.test(item.type)){
+                    return othis.next();
+                  }
+                }
+                return othis;
+              }(), {tips: [2,'#FF5722']});
             } else if(verType === 'alert') {
               layer.alert(errorText, {title: '提示', shadeClose: true});
             } else {
@@ -449,10 +457,18 @@ layui.define('layer', function(exports){
     });
     
     if(stop) return false;
-    
+
     layui.each(fieldElem, function(_, item){
+      item.name = (item.name || '').replace(/^\s*|\s*&/, '');
+
       if(!item.name) return;
       if(/^checkbox|radio$/.test(item.type) && !item.checked) return;
+
+      //用于支持数组 name
+      if(/^.*\[\]$/.test(item.name)){
+        item.name = item.name.replace(/^(.*)\[\]$/, '$1['+ (nameIndex++) +']');
+      }
+
       field[item.name] = item.value;
     });
  
