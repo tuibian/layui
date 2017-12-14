@@ -381,9 +381,8 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports){
   
   //表格重载
   Class.prototype.reload = function(options){
-    var that = this
-    ,options = that.config;
-    if(options.data && options.data.constructor === Array) delete that.config.data;
+    var that = this;
+    if(that.config.data && that.config.data.constructor === Array) delete that.config.data;
     that.config = $.extend({}, that.config, options);
     that.render();
   };
@@ -1247,6 +1246,7 @@ layui.define(['laytpl', 'laypage', 'layer', 'form'], function(exports){
   thisTable.config = {};
   table.reload = function(id, options){
     var config = thisTable.config[id];
+    options = options || {};
     if(!config) return hint.error('The ID option was not found in the table instance');
     if(options.data && options.data.constructor === Array) delete config.data;
     return table.render($.extend(true, {}, config, options));

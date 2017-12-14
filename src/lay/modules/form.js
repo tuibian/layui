@@ -409,9 +409,9 @@ layui.define('layer', function(exports){
     ,verifyElem = elem.find('*[lay-verify]') //获取需要校验的元素
     ,formElem = button.parents('form')[0] //获取当前所在的form元素，如果存在的话
     ,fieldElem = elem.find('input,select,textarea') //获取所有表单域
-    ,filter = button.attr('lay-filter') //获取过滤器
-    ,nameIndex = 0; //数组 name 索引
+    ,filter = button.attr('lay-filter'); //获取过滤器
 
+    
     //开始校验
     layui.each(verifyElem, function(_, item){
       var othis = $(this)
@@ -458,17 +458,20 @@ layui.define('layer', function(exports){
     
     if(stop) return false;
 
+    var nameIndex = {}; //数组 name 索引
     layui.each(fieldElem, function(_, item){
       item.name = (item.name || '').replace(/^\s*|\s*&/, '');
-
+      
       if(!item.name) return;
-      if(/^checkbox|radio$/.test(item.type) && !item.checked) return;
 
       //用于支持数组 name
       if(/^.*\[\]$/.test(item.name)){
-        item.name = item.name.replace(/^(.*)\[\]$/, '$1['+ (nameIndex++) +']');
+        var key = item.name.match(/^(.*)\[\]$/g)[0];
+        nameIndex[key] = nameIndex[key] | 0;
+        item.name = item.name.replace(/^(.*)\[\]$/, '$1['+ (nameIndex[key]++) +']');
       }
 
+      if(/^checkbox|radio$/.test(item.type) && !item.checked) return;
       field[item.name] = item.value;
     });
  
